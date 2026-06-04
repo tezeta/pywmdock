@@ -1,0 +1,24 @@
+[build-system]
+requires = ["setuptools>=61.0.0"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "pywmdock"
+version = "0.1.0"
+description = "a lightweight, Python-based dockapp manager for X11 environments"
+readme = "README.md"
+requires-python = ">=3.9"
+classifiers = [
+    "Programming Language :: Python :: 3",
+    "License :: OSI Approved :: GNU General Public License v3 or later (GPLv3+)",
+    "Operating System :: OS Independent",
+]
+dependencies = [
+    "PyGObject>=3.40.0",
+]
+
+[tool.setuptools.package-data]
+pywmdock = ["res/*.png", "res/*.svg"]
+
+[project.scripts]
+pywmdock = "pywmdock.main:main"
