@@ -25,7 +25,7 @@ class ConfigWindow(Gtk.Window):
         self.set_default_size(500, 650)
         self.set_border_width(15)
 
-        self.set_icon_from_file(get_image_path("GNUstep_logo.svg")) 
+        self.set_icon_from_file(get_image_path("GNUstep_logo.svg"))
 
         self.config_path = os.path.join(CONFIG_PATH, 'config.ini')
         self.state_file = os.path.join(CONFIG_PATH, 'state.json')
@@ -43,7 +43,7 @@ class ConfigWindow(Gtk.Window):
         self.add_dropdown(grid, row, "Orientation: ", "orientation", ["vertical", "horizontal"])
         row += 1
         self.add_dropdown(grid, row, "Stacking Mode: ", "stacking_mode",
-                        ["dock", "always-above", "always-below"])        
+                        ["dock", "always-above", "always-below"])
         row += 1
         self.add_dropdown(grid, row, "Anchor: ", "anchor", ["top-left", "top-right", "bottom-left", "bottom-right"])
         row += 1
@@ -53,7 +53,7 @@ class ConfigWindow(Gtk.Window):
         row += 1
         self.add_spin_button(grid, row, "Offset Y: ", "offset_y")
         row += 1
-        self.add_entry(grid, row, "Background Image (leave blank for default): ", "background_image")
+        self.add_entry(grid, row, "Background Image: ", "background_image", placeholder="default")
         row += 1
         self.add_entry(grid, row, "Detection Regex: ", "detection_regex")
 
@@ -84,10 +84,15 @@ class ConfigWindow(Gtk.Window):
         self.connect("destroy", Gtk.main_quit)
         self.show_all()
 
-    def add_entry(self, grid, row, label_text, config_key):
+    def add_entry(self, grid, row, label_text, config_key, placeholder=None):
         grid.attach(Gtk.Label(label=label_text, xalign=0), 0, row, 1, 1)
         entry = Gtk.Entry()
         entry.set_hexpand(True)
+
+        # Set the placeholder hint if one is provided
+        if placeholder:
+            entry.set_placeholder_text(placeholder)
+
         grid.attach(entry, 1, row, 1, 1)
         self.settings_widgets[config_key] = entry
 
