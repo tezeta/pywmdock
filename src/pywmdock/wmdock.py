@@ -217,7 +217,7 @@ class WMDockPanel(Gtk.Window):
         is_vert = (self.orientation == 'vertical')
         self.box = Gtk.Box(
             orientation=Gtk.Orientation.VERTICAL if is_vert else Gtk.Orientation.HORIZONTAL,
-            spacing=2
+            spacing=0
         )
         self.add(self.box)
 
