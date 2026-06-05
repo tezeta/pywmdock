@@ -15,6 +15,7 @@ classifiers = [
 ]
 dependencies = [
     "PyGObject>=3.40.0",
+    "python-xlib",
 ]
 
 [tool.setuptools.package-data]

@@ -15,6 +15,7 @@ import json
 import configparser
 import subprocess
 import time
+from Xlib import X, display
 import gi
 gi.require_version('Gtk', '3.0')
 gi.require_version('Wnck', '3.0')
@@ -182,6 +183,7 @@ class WMDockPanel(Gtk.Window):
         self.monitor_index = get_setting('monitor_index', int)
         self.offset_x = get_setting('offset_x', int)
         self.offset_y = get_setting('offset_y', int)
+        self.dockapp_spacing = get_setting('dockapp_spacing', int)
         self.background_image = get_setting('background_image') or get_image_path("tile.png") # fallback to tile image if not set
         self.detection_regex = get_setting('detection_regex')
 
@@ -217,7 +219,7 @@ class WMDockPanel(Gtk.Window):
         is_vert = (self.orientation == 'vertical')
         self.box = Gtk.Box(
             orientation=Gtk.Orientation.VERTICAL if is_vert else Gtk.Orientation.HORIZONTAL,
-            spacing=0
+            spacing=self.dockapp_spacing
         )
         self.add(self.box)
 
@@ -251,7 +253,7 @@ class WMDockPanel(Gtk.Window):
             self.set_keep_below(True)
 
     def update_dock_struts(self, widget, allocation):
-        """Calculates and applies X11 EWMH Struts based on window size, orientation, and anchors."""
+        """Calculates and applies X11 EWMH Struts constrained to a specific monitor."""
         if getattr(self, 'stacking_mode', 'dock') != 'dock':
             return
 
@@ -264,20 +266,28 @@ class WMDockPanel(Gtk.Window):
         if not xid:
             return
 
-        # Import Xlib locally to avoid breaking non-X11 fallbacks
-        from Xlib import X, display
-
         try:
             d = display.Display()
             x_window = d.create_resource_object('window', xid)
 
-            # Fetch the total size of the desktop to properly set geometry limits
-            root = d.screen().root
-            geom = root.get_geometry()
-            screen_width = geom.width
-            screen_height = geom.height
+            # Get the specific monitor's geometry using GDK
+            display_manager = gdk_window.get_display()
+            # self.monitor_index should be an integer (e.g., 0, 1, 2)
+            monitor_idx = getattr(self, 'monitor_index', 0)
+            monitor = display_manager.get_monitor(monitor_idx)
 
-            # Get current position and size of the dock panel
+            if not monitor:
+                logging.warning(f"Monitor index {monitor_idx} not found. Falling back.")
+                monitor = display_manager.get_primary_monitor()
+
+            # Monitor geometry relative to the global X11 coordinate space
+            monitor_geom = monitor.get_geometry()
+            m_x = monitor_geom.x
+            m_y = monitor_geom.y
+            m_w = monitor_geom.width
+            m_h = monitor_geom.height
+
+            # Get current global position and size of the dock panel
             origin = gdk_window.get_origin()
             win_x = origin.x
             win_y = origin.y
@@ -291,27 +301,31 @@ class WMDockPanel(Gtk.Window):
 
             anchor = self.anchor.lower()
 
-            # Horizontal Layouts (Reserve Y-axis space, span full X-axis width)
+            # Horizontal Layouts (Reserve Y-axis space relative to global screen top/bottom)
             if self.orientation == 'horizontal':
                 if "top" in anchor:
+                    # 'top' strut is distance from the absolute top of the screen to the bottom of the dock
                     top = win_y + win_h
-                    top_start_x = 0
-                    top_end_x = screen_width
+                    top_start_x = m_x
+                    top_end_x = m_x + m_w
                 elif "bottom" in anchor:
-                    bottom = screen_height - win_y
-                    bottom_start_x = 0
-                    bottom_end_x = screen_width
+                    # X11 requires total global screen height to compute bottom distance
+                    root_geom = d.screen().root.get_geometry()
+                    bottom = root_geom.height - win_y
+                    bottom_start_x = m_x
+                    bottom_end_x = m_x + m_w
 
-            # Vertical Layouts (Reserve X-axis space, span full Y-axis height)
+            # Vertical Layouts (Reserve X-axis space relative to global screen left/right)
             if self.orientation == 'vertical':
                 if "left" in anchor:
                     left = win_x + win_w
-                    left_start_y = 0
-                    left_end_y = screen_height
+                    left_start_y = m_y
+                    left_end_y = m_y + m_h
                 elif "right" in anchor:
-                    right = screen_width - win_x
-                    right_start_y = 0
-                    right_end_y = screen_height
+                    root_geom = d.screen().root.get_geometry()
+                    right = root_geom.width - win_x
+                    right_start_y = m_y
+                    right_end_y = m_y + m_h
 
             # Build EWMH Strut Arrays
             strut_partial_values = [

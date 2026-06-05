@@ -53,6 +53,8 @@ class ConfigWindow(Gtk.Window):
         row += 1
         self.add_spin_button(grid, row, "Offset Y: ", "offset_y")
         row += 1
+        self.add_spin_button(grid, row, "Dockapp Spacing: ", "dockapp_spacing")
+        row += 1
         self.add_entry(grid, row, "Background Image: ", "background_image", placeholder="default")
         row += 1
         self.add_entry(grid, row, "Detection Regex: ", "detection_regex")
