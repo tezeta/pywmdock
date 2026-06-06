@@ -10,9 +10,7 @@ Includes a GTK-based configuration panel for managing your dock layout, orientat
 
 Because dockapps are cool. I doubt many people are still left in the world using them - many of them are over twenty years old - but it's a shame to see them become unusable outside of WindowMaker, and running them in windowed mode is not ideal.
 
- There is an excellent port of xfce4-wmdock-plugin for newer XFCE versions/GTK3 here: https://github.com/maurerpe/xfce4-wmdock-plugin, however I am no longer using XFCE and wanted something desktop or workspace agnostic.
-
-Note that this supports dockapps in a single direction (vertical or horizontal). Adding support for a magnetic "grid" to allow dockapps to truly dock to one another may come in the future.
+There is an excellent port of xfce4-wmdock-plugin for newer XFCE versions/GTK3 here: https://github.com/maurerpe/xfce4-wmdock-plugin, however I am no longer using XFCE and wanted something desktop or workspace agnostic.
 
 ## Prerequisites
 
@@ -21,12 +19,13 @@ Note that this supports dockapps in a single direction (vertical or horizontal).
 * `python3-gi-cairo`
 * `gir1.2-gtk-3.0`
 * `gir1.2-wnck-3.0`
+* `python3-xlib`
 
 On Debian:
 
 ```
 sudo apt update
-sudo apt install python3 python3-gi python3-gi-cairo gir1.2-gtk-3.0 gir1.2-wnck-3.0
+sudo apt install python3 python3-gi python3-gi-cairo gir1.2-gtk-3.0 gir1.2-wnck-3.0 python3-xlib
 ```
 
 ## Installation & Setup
@@ -46,4 +45,3 @@ To open settings:
 ```bash
 pywmdock --config
 ```
-It is recommended to use a dockapp to launch this command.
