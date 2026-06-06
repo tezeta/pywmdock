@@ -1,0 +1,11 @@
+[Desktop Entry]
+Type=Application
+Version=0.1.0
+Name=PyWMDock Configuration
+GenericName=Python dockapp manager preferences
+Comment=a lightweight, Python-based dockapp manager for X11 environments - GUI panel
+Exec=pywmdock --config
+#Icon=pywmdock-config
+Terminal=false
+Categories=Settings;DesktopSettings;Qt;GTK;
+Keywords=settings;preferences;configure;pywmdock;

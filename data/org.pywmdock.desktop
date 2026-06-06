@@ -1,0 +1,11 @@
+[Desktop Entry]
+Type=Application
+Version=0.1.0
+Name=PyWMDock
+GenericName=Python dockapp manager
+Comment=a lightweight, Python-based dockapp manager for X11 environments
+Exec=pywmdock
+#Icon=pywmdock
+Terminal=false
+Categories=Utility;System;
+Keywords=dock;window-manager;pywmdock;

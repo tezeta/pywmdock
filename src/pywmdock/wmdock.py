@@ -228,8 +228,7 @@ class WMDockPanel(Gtk.Window):
         # "realize" fires too early — the window size is still (1,1) at that point.
         self.connect("size-allocate", self.on_size_allocate)
 
-        # We also listen to size allocation to dynamically recalculate struts
-        # whenever dockapps are added or removed!
+        # listen to size allocation to dynamically recalculate struts whenever dockapps are added or removed
         self.connect("size-allocate", self.update_dock_struts)
 
     def apply_stacking_mode(self):

@@ -18,6 +18,15 @@ dependencies = [
     "python-xlib",
 ]
 
+[tool.setuptools]
+package-dir = {"" = "src"}
+
+[tool.setuptools.data-files]
+"share/applications" = [
+    "data/org.pywmdock.desktop",
+    "data/org.pywmdock.config.desktop"
+]
+
 [tool.setuptools.package-data]
 pywmdock = ["res/*.png", "res/*.svg"]
 
