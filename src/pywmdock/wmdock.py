@@ -21,6 +21,7 @@ gi.require_version('Gtk', '3.0')
 gi.require_version('Wnck', '3.0')
 from gi.repository import Gtk, Wnck, GLib, Gdk, GdkPixbuf
 
+from .ui import ConfigWindow, AboutDialog
 from .dockapp import DockAppWidget
 from .defaults import PROJECT_NAME, CONFIG_PATH, DEFAULT_SETTINGS
 from .util import get_image_path
@@ -40,6 +41,7 @@ class WMDockPanel(Gtk.Window):
 
         self.load_config()
         self.setup_ui()
+        self.config_window = None
 
         self.screen = Wnck.Screen.get_default()
         GLib.idle_add(self.initial_scan)
@@ -207,6 +209,9 @@ class WMDockPanel(Gtk.Window):
         self.stick()
         self.set_default_size(1, 1)
 
+        self.add_events(Gdk.EventMask.BUTTON_PRESS_MASK)
+        self.connect("button-press-event", self.on_button_press)
+
         self.apply_stacking_mode()
 
         screen = self.get_screen()
@@ -352,6 +357,51 @@ class WMDockPanel(Gtk.Window):
             d.flush()
         except Exception as e:
             logging.warning(f"Failed to set dock window struts: {e}")
+
+    def on_button_press(self, widget, event):
+        # Right click menu
+        if event.button == 3:
+            menu = Gtk.Menu()
+
+            config_item = Gtk.MenuItem(label="Configure...")
+            config_item.connect("activate", self.open_config_window)
+            menu.append(config_item)
+
+            about_item = Gtk.MenuItem(label="About")
+            about_item.connect("activate", self.open_about_dialog)
+            menu.append(about_item)
+
+            menu.append(Gtk.SeparatorMenuItem())
+
+            quit_item = Gtk.MenuItem(label="Quit")
+            quit_item.connect("activate", Gtk.main_quit)
+            menu.append(quit_item)
+
+            menu.show_all()
+            menu.popup_at_pointer(event)
+            return True
+        return False
+
+    def open_about_dialog(self, widget):
+        # Pass 'self' as the parent so the window manager keeps them paired
+        about = AboutDialog(parent=self)
+        about.show_all()
+
+    def open_config_window(self, widget):
+        # If the window exists and is running, bring it to focus instead of making a duplicate
+        if self.config_window and self.config_window.get_realized():
+            self.config_window.present()
+            return
+
+        logging.debug("Opening configuration window...")
+        self.config_window = ConfigWindow()
+
+        # Connect to the destroy signal so we clear the reference when they close it
+        self.config_window.connect("destroy", self.on_config_window_closed)
+        self.config_window.show_all()
+
+    def on_config_window_closed(self, widget):
+        self.config_window = None
 
     def on_size_allocate(self, widget, allocation):
         # Defer until after GTK finishes the current layout pass so get_size()

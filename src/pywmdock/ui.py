@@ -1,20 +1,23 @@
 """
 pywmdock
 
-config_ui.py
-contains GUI class for modifying settings
+ui.py
+contains GUI classes for non-dock UI elements
 
 tezeta 2026
 """
 
 import os
+import logging
 import signal
 import json
 import configparser
 from importlib import resources
+from importlib.metadata import version, metadata, PackageNotFoundError
+
 import gi
 gi.require_version('Gtk', '3.0')
-from gi.repository import Gtk, Gdk
+from gi.repository import Gtk, Gdk, GdkPixbuf
 
 from .defaults import PROJECT_NAME, CONFIG_PATH
 from .util import get_image_path
@@ -25,7 +28,7 @@ class ConfigWindow(Gtk.Window):
         self.set_default_size(500, 650)
         self.set_border_width(15)
 
-        self.set_icon_from_file(get_image_path("GNUstep_logo.svg"))
+        self.set_icon_from_file(get_image_path("tile.png"))
 
         self.config_path = os.path.join(CONFIG_PATH, 'config.ini')
         self.state_file = os.path.join(CONFIG_PATH, 'state.json')
@@ -83,7 +86,8 @@ class ConfigWindow(Gtk.Window):
         save_btn.connect("clicked", self.save_all)
         btn_box.pack_start(save_btn, True, True, 0)
 
-        self.connect("destroy", Gtk.main_quit)
+        #self.connect("destroy", Gtk.main_quit)
+        self.connect("destroy", lambda w: self.close())
         self.show_all()
 
     def add_entry(self, grid, row, label_text, config_key, placeholder=None):
@@ -221,3 +225,60 @@ class ConfigWindow(Gtk.Window):
             except Exception as e:
                 print(f"Failed to signal app: {e}")
         #self.destroy()
+
+class AboutDialog(Gtk.AboutDialog):
+    """
+    Standard GTK About Dialog populated dynamically from installed package metadata.
+    """
+    def __init__(self, parent=None):
+        super().__init__()
+
+        if parent:
+            self.set_transient_for(parent)
+            self.set_modal(True)
+
+        try:
+            # "pywmdock" matches the exact name defined in your pyproject.toml [project] block
+            pkg_metadata = metadata("pywmdock")
+
+            app_version = pkg_metadata.get("Version")
+            app_summary = pkg_metadata.get("Summary", "A lightweight, Python-based dockapp manager for X11 environments")
+            app_author = pkg_metadata.get("Author", "tezeta")
+        except PackageNotFoundError:
+            # Fallbacks for running directly from source directory without installation
+            app_version = ""
+            app_summary = "A lightweight, Python-based dockapp manager for X11 environments"
+            app_author = "tezeta"
+
+        # Apply metadata to GTK Window Layout
+        self.set_program_name("PyWMDock")
+        self.set_version(app_version)
+        self.set_comments(app_summary)
+        self.set_authors([app_author])
+        self.set_documenters([app_author])
+        self.set_artists([app_author])
+
+        # Fixed attributes
+        self.set_website("https://github.com/tezeta/pywmdock")
+        self.set_website_label("GitHub Repository")
+        self.set_license_type(Gtk.License.GPL_3_0)
+
+
+        logo_path = get_image_path("tile.png")
+        if logo_path and os.path.exists(logo_path):
+            try:
+                # 128x128 is clean, but since dockapp tiles are natively 64x64,
+                # you can change this to (64, 64, True) if you want it pixel-perfect
+                # without any upscaling blur.
+                pixbuf = GdkPixbuf.Pixbuf.new_from_file_at_scale(logo_path, 64, 64, True)
+                self.set_logo(pixbuf)
+                logging.debug(f"Successfully loaded about dialog logo from: {logo_path}")
+            except Exception as e:
+                logging.warning(f"Failed to load about dialog logo: {e}")
+        else:
+            logging.warning(f"Could not locate tile.png at path: {logo_path}")
+
+        self.connect("response", self.on_response)
+
+    def on_response(self, dialog, response_id):
+        self.destroy()

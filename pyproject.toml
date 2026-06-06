@@ -4,7 +4,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "pywmdock"
-version = "0.1.0"
+version = "0.2.0"
 description = "a lightweight, Python-based dockapp manager for X11 environments"
 readme = "README.md"
 requires-python = ">=3.9"

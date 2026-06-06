@@ -18,12 +18,8 @@ gi.require_version('Gtk', '3.0')
 from gi.repository import Gtk
 
 from .wmdock import WMDockPanel
-from .config_ui import ConfigWindow
+from .ui import ConfigWindow
 from .defaults import CONFIG_PATH
-
-def reload_app_config(signum, frame):
-    logging.info("Received SIGUSR1 signal. Reloading configuration...")
-    os.execl(sys.executable, sys.executable, *sys.argv)
 
 def main():
     parser = argparse.ArgumentParser(description="PyWMDock")
@@ -58,6 +54,10 @@ def main():
         logging.info("Launching PyWMDock...")
         panel = WMDockPanel()
         Gtk.main()
-        
+
+def reload_app_config(signum, frame):
+    logging.info("Received SIGUSR1 signal. Reloading configuration...")
+    os.execl(sys.executable, sys.executable, *sys.argv)
+
 if __name__ == '__main__':
-    main()        
+    main()
